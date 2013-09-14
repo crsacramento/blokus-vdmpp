@@ -1,0 +1,109 @@
+class TestBoard is subclass of Test
+	operations
+		public TestGoodUsage : () ==> ()
+		TestGoodUsage() ==
+		(
+			dcl b : Board := new Board();
+			dcl s : set of Piece`Color := {<NONE>};
+			dcl p : Piece := new Piece(<BLUE>, <DUO>);
+			dcl p1 : Piece := new Piece(<BLUE>, <TRIO_CORNER>);
+			dcl p2 : Piece := new Piece(<RED>, <MONO>);
+			dcl sCoords : seq of Piece`Coord := [mk_Piece`Coord(1,1), mk_Piece`Coord(1,2)];
+			dcl se : seq of Piece`Coord := [];
+
+			--check if board is empty and has only the color <NONE>
+			assertTrue(card(rng b.board) = 1);
+			assertTrue((rng b.board) = s);
+
+			se := b.returnPieceCoordsInBoard(p, mk_Piece`Coord(1, 1));
+			assertTrue(se(1) = sCoords(1) and se(2) = sCoords(2));
+			
+			sCoords := [mk_Piece`Coord(1, 1), mk_Piece`Coord(2, 1)];
+			p.flip(); -- new Direction is horizontal
+			se := b.returnPieceCoordsInBoard(p, mk_Piece`Coord(1, 1));
+			assertTrue(se(1) = sCoords(1) and se(2) = sCoords(2));
+			
+			p.flip(); -- new Direction is vertical	
+			assertTrue(b.isPieceInCorner(p, mk_Piece`Coord(1, 1)));
+			assertFalse(b.isPieceInCorner(p, mk_Piece`Coord(2, 1)));
+			assertFalse(b.isPieceInCorner(p, mk_Piece`Coord(1, 2)));
+			assertFalse(b.isPieceInCorner(p, mk_Piece`Coord(19, 1)));
+			assertTrue(b.isPieceInCorner(p, mk_Piece`Coord(1, 20)));
+			assertTrue(b.isPieceInCorner(p, mk_Piece`Coord(1, 19)));
+			p.flip(); -- new Direction is horizontal
+			assertTrue(b.isPieceInCorner(p, mk_Piece`Coord(19, 1)));
+			assertTrue(b.isPieceInCorner(p, mk_Piece`Coord(20, 1)));
+			assertTrue(b.isPieceInCorner(p, mk_Piece`Coord(19, 1)));
+			assertFalse(b.isPieceInCorner(p, mk_Piece`Coord(18, 1)));
+			p.flip(); -- new Direction is vertical
+			
+			assertFalse(b.isPieceOutOfBounds(p, mk_Piece`Coord(1, 1)));
+			assertFalse(b.isPieceOutOfBounds(p, mk_Piece`Coord(20, 1)));
+			assertTrue(b.isPieceOutOfBounds(p, mk_Piece`Coord(1, 20)));
+			assertFalse(b.isPieceOutOfBounds(p, mk_Piece`Coord(19, 1)));
+			p.flip(); -- new Direction is horizontal
+			assertFalse(b.isPieceOutOfBounds(p, mk_Piece`Coord(1, 20)));
+			assertTrue(b.isPieceOutOfBounds(p, mk_Piece`Coord(20, 1)));
+			assertFalse(b.isPieceOutOfBounds(p, mk_Piece`Coord(1, 20)));
+			p.flip(); -- new Direction is vertical
+			
+			se := b.returnPieceCoordsInBoard(p, mk_Piece`Coord(3,2));
+			assertTrue(b.validCorner(mk_Piece`Coord(2,1), se));
+			assertTrue(b.validCorner(mk_Piece`Coord(2,4), se));
+			assertFalse(b.validCorner(mk_Piece`Coord(4,2), se));
+			
+			se := b.returnPieceCoordsInBoard(p1, mk_Piece`Coord(3,2));
+			assertTrue(b.validCorner(mk_Piece`Coord(5,2), se));
+			assertTrue(b.validCorner(mk_Piece`Coord(4,1), se));
+			assertFalse(b.validCorner(mk_Piece`Coord(4,3), se));
+			assertFalse(b.validCorner(mk_Piece`Coord(2,3), se));
+			assertFalse(b.validCorner(mk_Piece`Coord(4,4), se));
+			
+			-- draw <TRIO_CORNER> on board
+			b.drawPiece(p1, mk_Piece`Coord(2, 2));
+			
+			assertTrue(b.board(mk_Piece`Coord(2, 2)) = <BLUE>);
+			assertTrue(b.board(mk_Piece`Coord(2, 3)) = <BLUE>);
+			assertTrue(b.board(mk_Piece`Coord(3, 3)) = <BLUE>);
+			assertFalse(b.board(mk_Piece`Coord(3, 2)) = <BLUE>);
+			
+			assertFalse(b.doesPieceTouchCorner(p2, mk_Piece`Coord(1,1)));
+			p2 := new Piece(<BLUE>, <MONO>);
+			assertTrue(b.doesPieceTouchCorner(p2, mk_Piece`Coord(1, 4)));
+			assertTrue(b.doesPieceTouchCorner(p2, mk_Piece`Coord(4, 4)));
+			assertTrue(b.doesPieceTouchCorner(p2, mk_Piece`Coord(3, 1)));
+			assertTrue(b.doesPieceTouchCorner(p2, mk_Piece`Coord(3, 4)));
+			assertTrue(b.doesPieceTouchCorner(p2, mk_Piece`Coord(3, 3)));
+ 
+			p2 := new Piece(<BLUE>, <PENTA_LINE>);
+			assertFalse(b.doesPieceTouchCorner(p2, mk_Piece`Coord(2, 6)));
+			p2.flip();
+			assertFalse(b.doesPieceTouchCorner(p2, mk_Piece`Coord(2, 6)));
+			
+			assertTrue(card(rng b.getEmptyCoords()) = 1);
+			assertTrue((rng b.getEmptyCoords()) = s);
+			assertTrue((mk_Piece`Coord(2, 2)) not in set (dom b.getEmptyCoords()));
+			assertTrue((mk_Piece`Coord(2, 3)) not in set (dom b.getEmptyCoords()));
+			assertFalse((mk_Piece`Coord(3, 2)) not in set (dom b.getEmptyCoords()));
+			
+			assertTrue(b.doesPieceTouchSameColorOnSides(p, mk_Piece`Coord(1, 1)));
+			assertTrue(b.doesPieceTouchSameColorOnSides(p, mk_Piece`Coord(3, 3)));
+			assertFalse(b.doesPieceTouchSameColorOnSides(p, mk_Piece`Coord(4, 1)));
+			assertTrue(b.doesPieceTouchSameColorOnSides(p, mk_Piece`Coord(1, 3)));
+			assertFalse(b.doesPieceTouchSameColorOnSides(p, mk_Piece`Coord(3, 5)));
+			assertFalse(b.doesPieceTouchSameColorOnSides(p, mk_Piece`Coord(5, 3)));
+			assertFalse(b.doesPieceTouchSameColorOnSides(p, mk_Piece`Coord(1, 4)));
+			
+			assertTrue(b.doesPieceFit(p, mk_Piece`Coord(1, 1)));
+			assertFalse(b.doesPieceFit(p, mk_Piece`Coord(3, 3)));
+			assertTrue(b.doesPieceFit(p, mk_Piece`Coord(1, 2)));
+			assertFalse(b.doesPieceFit(p, mk_Piece`Coord(2, 1)));
+			assertTrue(b.doesPieceFit(p, mk_Piece`Coord(3, 1)));
+			
+			p2.flip();
+			
+			assertFalse(b.doesPieceFit(p2, mk_Piece`Coord(3, 1)));
+			assertTrue(b.doesPieceFit(p2, mk_Piece`Coord(4, 1)));
+		);
+		
+end TestBoard

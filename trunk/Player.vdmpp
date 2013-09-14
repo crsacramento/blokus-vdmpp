@@ -1,0 +1,124 @@
+-- Player?
+class Player
+
+values
+	private static INITIAL_HAND_SIZE = 21;
+
+instance variables
+	private name : Game`String := ""; --inv: cada player tem um nome diferente, n�o pode haver nomes iguais
+	private color : Piece`Color := <NONE>; --inv: player tem de ter sempre a mesma color
+	private score : nat := 0;
+	private isPlaying : bool := false;
+	private lastPiecePlayed : Piece := new Piece();
+	private currentPiece : Piece := new Piece();
+	private playedFirstPiece : bool := false;
+	private pieces : seq of Piece := []; -- cannot have more than initial_hand_size
+
+/*Restri��es:
+�	Apenas pode jogar na sua vez;
+�	Apenas pode mover as suas pe�as;
+�	Quando for a sua vez de jogar, apenas pode fazer uma jogada, colocando apenas uma pe�a.
+*/
+
+operations
+	public Player : Game`String * Piece`Color ==> Player
+	Player(n,c) == 
+	(
+		name := n;
+		color := c;
+		initHand();
+	);
+	
+	--gets & sets
+	public getName : () ==> Game`String
+	getName() == return name;
+
+	public getColor : () ==> Piece`Color
+	getColor() == return color;
+
+	public isPlayerPlaying : () ==> bool
+	isPlayerPlaying() == return isPlaying;
+	
+	public getCurrentPiece : () ==> Piece
+	getCurrentPiece() == return currentPiece;
+	
+	public choosePiece : nat1 ==> ()
+	choosePiece(i) == currentPiece := pieces(i)
+	pre i in set inds pieces;
+	
+	public getLastPiecePlayed : () ==> Piece
+	getLastPiecePlayed() == return lastPiecePlayed;
+
+	public toggleIsPlaying : () ==> ()
+	toggleIsPlaying() ==
+		if(isPlaying = true) then isPlaying := false
+		else isPlaying := true;
+			
+	public hasPlayedFirstPiece : () ==> bool
+	hasPlayedFirstPiece() == return playedFirstPiece;
+		
+	public getPieces : () ==> seq of Piece
+	getPieces() == return pieces
+	pre len(pieces) > 0;
+		
+	public setPlayedFirstPiece : bool ==> ()
+	setPlayedFirstPiece(b) == playedFirstPiece := b;
+		
+	public updateLastPiecePlayed : () ==> ()
+	updateLastPiecePlayed() == 
+	(
+		dcl alea : seq of Piece := [];
+		dcl i : nat1 := 1;
+		--erase current piece from 'hand'
+		while(i <= len(pieces)) do(
+			if not currentPiece.equals(pieces(i)) 
+			then alea := alea ^ [pieces(i)];
+			i := i+1;
+		);
+		pieces := alea;
+		--update last played piece and current piece
+		lastPiecePlayed := currentPiece;
+	);
+	
+	-- for extra slurp points at the end of the game
+	public wasLastPieceMono : () ==> bool
+  	wasLastPieceMono() == 
+    	if lastPiecePlayed.getShape() = <MONO> then return true
+    	else return false;
+    		
+    public initHand : () ==> ()
+    initHand() ==
+    (
+		--build pieces with all the 21 pieces
+		dcl newPiece : Piece := new Piece(color, <MONO>);
+		dcl i : nat1 := 1;
+		pieces := [];
+		while(i <= len(newPiece.getAllShapes()) ) do(
+			newPiece := new Piece(color, newPiece.getAllShapes()(i));
+		  	pieces := pieces ^ [newPiece];
+		  	i := i+1;
+		);
+		--for all shape in set elems newPiece.getAllShapes() do
+		--(
+		  --newPiece := new Piece(color, shape);
+		  --pieces := pieces ^ [newPiece];
+		--);
+	);
+
+public getPlayingPiece : () ==> Piece
+getPlayingPiece() == return currentPiece;
+
+----------------------------
+
+  public updateScore : nat ==> ()
+  updateScore(score_to_add) ==
+    score := score + score_to_add;
+
+  public getScore : () ==> nat
+  getScore() ==
+  	return score;
+
+end Player
+
+
+

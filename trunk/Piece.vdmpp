@@ -1,0 +1,286 @@
+--
+class Piece
+
+types
+	public Shape = 	<MONO> | <DUO> | <TRIO_CORNER> | <TRIO_LINE> | <TETRA_SQUARE> | <TETRA_T> | <TETRA_LINE> | <TETRA_L> | <TETRA_Z> |
+					<PENTA_L> | <PENTA_T> | <PENTA_CORNER> | <PENTA_Z> | <PENTA_LINE> | <PENTA_SQ_PLUS_1> |
+					<PENTA_M> | <PENTA_C> | <PENTA_T_PLUS_1> | <PENTA_CROSS> | <PENTA_LINE_T> | <PENTA_LINE_Z>;
+	public Color =  <NONE> | <BLUE> | <RED> | <YELLOW> | <GREEN> ;
+	public Direction = <UP> | <RIGHT> | <DOWN> | <LEFT> | <ALL> | <HORIZONTAL> | <VERTICAL>;
+	public Coord :: x : real
+                    y : real;
+                    --inv c == c.x > -20 and c.x <= 20 and
+                                --c.y > -20 and c.y <= 20; 
+
+instance variables
+	private size : nat1;
+	private color : Color := <NONE>;
+	private shape : Shape := <MONO>;
+	private rotations : nat := 0;
+	private isBeingPlayed : bool := false;
+	--private positionsToDraw : seq of Coord := [];
+	private positionsToDraw : map Direction to seq of Coord := {|->};
+	private corners : map Direction to seq of Coord := {|->};
+	private currentDirection : Direction := <ALL>;
+	
+operations
+	public getIsBeingPlayed : () ==> bool
+	getIsBeingPlayed() == return isBeingPlayed;
+	
+	public findCorners : () ==> map Direction to seq of Coord
+	findCorners() == (
+		dcl res : map Direction to seq of Coord := {|->};
+		dcl i : nat1 := 1;
+		dcl s: seq of Coord;
+		dcl sides : seq of Coord;
+		dcl c : Coord;
+		dcl finalSeq : seq of Coord := [];
+		for all d in set dom positionsToDraw do (
+			s := positionsToDraw(d);
+			while( i <= len(s)) do(
+				c := s(i);
+				sides := [mk_Coord(c.x-1, c.y),mk_Coord(c.x+1, c.y),
+							mk_Coord(c.x, c.y-1),mk_Coord(c.x, c.y+1)];
+				if not( (sides(1) = s(i) and sides(2) = s(i)) or (sides(3) = s(i) and sides(4) = s(i)) )
+					then finalSeq := finalSeq ^ [c];
+				i := i+1;
+			);
+			res := res ++ {d |-> finalSeq};
+			finalSeq := [];
+		);
+		return res;
+	) pre positionsToDraw <> {|->};
+	
+	public getNextFlip : () ==> Direction
+	getNextFlip() ==
+	(
+		dcl dir : Direction; 
+		cases currentDirection :
+			<ALL> -> dir := <ALL>,
+			<HORIZONTAL> -> dir := <VERTICAL>,
+			<VERTICAL> -> dir := <HORIZONTAL>,
+			<UP> -> dir := <DOWN>,
+			<RIGHT> -> dir := <LEFT>,
+			<DOWN> -> dir := <UP>,
+			<LEFT> -> dir := <RIGHT>
+		end;
+		return dir;
+	);
+	public getNextRotation : () ==> Direction
+	getNextRotation() ==
+	(
+		dcl dir : Direction; 
+		cases currentDirection :
+			<ALL> -> dir := <ALL>,
+			<HORIZONTAL> -> dir := <VERTICAL>,
+			<VERTICAL> -> dir := <HORIZONTAL>,
+			<UP> -> dir := <RIGHT>,
+			<RIGHT> -> dir := <DOWN>,
+			<DOWN> -> dir := <LEFT>,
+			<LEFT> -> dir := <UP>
+		end;
+		return dir;
+	);
+	
+	public getPositionsToDraw : () ==> map Direction to seq of Piece`Coord
+	getPositionsToDraw() ==
+		return positionsToDraw;
+		
+	public getCorners : () ==> map Direction to seq of Piece`Coord
+	getCorners() == return corners;	
+		
+	public getColor : () ==> Color
+	getColor() == return color;
+	
+	public getAllShapes : () ==> seq of Shape
+	getAllShapes() ==
+		return [<MONO> , <DUO> , <TRIO_CORNER> , <TRIO_LINE> , <TETRA_SQUARE> , <TETRA_T> , <TETRA_LINE> , <TETRA_L> , <TETRA_Z> ,
+					<PENTA_L> , <PENTA_T> , <PENTA_CORNER> , <PENTA_Z> , <PENTA_LINE> , <PENTA_SQ_PLUS_1> ,
+					<PENTA_M> , <PENTA_C> , <PENTA_T_PLUS_1> , <PENTA_CROSS> , <PENTA_LINE_T> , <PENTA_LINE_Z>];
+	
+	public getShape : () ==> Shape
+	getShape() ==
+		return shape;
+	
+	public getCurrDirection : () ==> Direction
+	getCurrDirection() ==
+		return currentDirection;
+	
+	public Piece : () ==> Piece
+	Piece() ==
+	(
+		 color := <NONE>;
+		 shape := <MONO>;
+		 rotations := 0;
+		 isBeingPlayed := false;
+		 positionsToDraw := {|->};
+		 corners := {|->};
+	);
+	public Piece : Color * Shape ==> Piece
+	Piece(pieceColor, pieceShape) ==
+		(
+			size := pieceSize(pieceShape);
+			color := pieceColor;
+			shape := pieceShape;
+			positionsToDraw := fillPositionsToDraw(pieceShape);
+			rotations := getRotations(pieceShape);
+			currentDirection := getInitialDirection();
+			corners := findCorners();
+			return self;
+		);
+	public getInitialDirection : () ==> Direction
+	getInitialDirection() ==
+	(
+		dcl d : Direction;
+		cases rotations :
+			0 -> d := <ALL>,
+			2 -> d := <VERTICAL>,
+			4 -> d := <UP>
+		end;
+		return d;
+	);
+	public getRotations : Shape ==> nat
+	getRotations(pieceShape) ==
+	(
+		cases pieceShape :
+			<MONO>,<TETRA_SQUARE>, <PENTA_CROSS> -> return 0,
+			<DUO>,<TRIO_LINE>, <TETRA_LINE>,<PENTA_LINE>,<TETRA_Z>,<PENTA_LINE_Z> -> return 2,
+            <TRIO_CORNER>, <TETRA_T>,  <TETRA_L>, <PENTA_T>, <PENTA_CORNER>, <PENTA_Z>,
+			<PENTA_L>,<PENTA_SQ_PLUS_1>, <PENTA_M>, <PENTA_C>,<PENTA_T_PLUS_1>,
+			<PENTA_CROSS>, <PENTA_LINE_T> -> return 4,
+			others -> return -1
+		end;
+	) post RESULT >= 0;
+	
+	-- to flip, change signal in all the coords in positionsToDraw (eq to 2 rotations)
+	--(if positive they get negative and vice versa) 
+	public flip : () ==> ()
+	flip() ==
+	(
+		currentDirection := getNextFlip();
+	);
+	
+	-- clockwise rotation 
+	public rotate : () ==> ()
+	rotate() ==
+	(
+		currentDirection := getNextRotation();
+	);
+
+	public equals : Piece ==> bool
+	equals(piece) ==
+		return (self.shape = piece.shape);
+
+	public toggleIsBeingPlayed : () ==> ()
+	toggleIsBeingPlayed() ==
+		if(isBeingPlayed = true) then
+			isBeingPlayed := false
+		else
+			isBeingPlayed := true;
+			
+	public pieceSize : Shape ==> nat1
+	pieceSize(pieceShape) ==
+		cases pieceShape :
+			<MONO> -> return 1,
+			<DUO> -> return 2,
+			<TRIO_CORNER>, <TRIO_LINE> -> return 3,
+			<TETRA_SQUARE>, <TETRA_T>, <TETRA_LINE>, <TETRA_L>, <TETRA_Z> -> return 4,
+			<PENTA_L>, <PENTA_T>, <PENTA_CORNER>, <PENTA_Z>, <PENTA_LINE>,
+			<PENTA_SQ_PLUS_1>, <PENTA_M>, <PENTA_C>, <PENTA_T_PLUS_1>,
+			<PENTA_CROSS>, <PENTA_LINE_T>, <PENTA_LINE_Z> -> return 5,
+			others -> return 0
+		end;
+	
+	-- By definition each piece's starting coord is always the top most left corner coord
+	-- Initial starting "positions" for shapes are like in the provided image
+	private fillPositionsToDraw : Shape ==> map Direction to seq of Piece`Coord
+	fillPositionsToDraw(s) ==
+		(cases s :
+			<MONO> -> return {<ALL> |-> [mk_Coord(0, 0)]},
+			
+			<DUO> -> return {<HORIZONTAL> |-> [mk_Coord(0, 0), mk_Coord(1, 0)],
+							 <VERTICAL> |-> [mk_Coord(0, 0), mk_Coord(0, 1)]},
+							  
+			<TRIO_CORNER> -> return {<RIGHT> |-> [mk_Coord(0, 0), mk_Coord(0, 1),mk_Coord(1, 0)],
+									 <LEFT> |-> [mk_Coord(0, 0), mk_Coord(0,1),mk_Coord(-1, 0)],
+									 <UP> |-> [mk_Coord(0, 0), mk_Coord(0,1),mk_Coord(1, 1)],
+									 <DOWN> |-> [mk_Coord(0, 0), mk_Coord(1, 0),mk_Coord(1, 1)]},
+
+			<TRIO_LINE> -> return {<HORIZONTAL> |-> [mk_Coord(0, 0), mk_Coord(1, 0),mk_Coord(2, 0)],
+								   <VERTICAL> |-> [mk_Coord(0, 0), mk_Coord(0, 1),mk_Coord(0, 2)]},
+
+			<TETRA_SQUARE> -> return {<ALL> |-> [mk_Coord(0, 0), mk_Coord(1, 0),mk_Coord(0, 1),mk_Coord(1, 1)]},
+
+			<TETRA_T> -> return {<DOWN> |-> [mk_Coord(0, 0), mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(2, 0)],
+								 <LEFT> |-> [mk_Coord(0, 0), mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(1, -1)],
+								 <UP> |-> [mk_Coord(0, 0), mk_Coord(1, 0),mk_Coord(1, -1),mk_Coord(2, 0)],
+								 <RIGHT> |-> [mk_Coord(0, 0), mk_Coord(0, 1),mk_Coord(0, -1),mk_Coord(1, 0)]},
+
+			<TETRA_LINE> -> return {<HORIZONTAL> |-> [mk_Coord(0, 0), mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(3, 0)],
+									<VERTICAL> |-> [mk_Coord(0, 0), mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(0, 3)]},
+
+			<TETRA_L> -> return {<UP> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(1, 2)],
+								 <DOWN> |-> [mk_Coord(0, 0),mk_Coord(1,0),mk_Coord(1, 1),mk_Coord(1, 2)],
+								 <LEFT> |-> [mk_Coord(0, 0),mk_Coord(1,0),mk_Coord(2,0),mk_Coord(2, -1)],
+								 <RIGHT> |->[mk_Coord(0, 0),mk_Coord(1,0),mk_Coord(2,0),mk_Coord(0, 1)]},
+
+			<TETRA_Z> -> return {<VERTICAL> |->[mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 1),mk_Coord(1, 2)],
+								 <HORIZONTAL> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(1, -1),mk_Coord(2,-1)]},
+
+			<PENTA_L> -> return {<UP> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(0,3),mk_Coord(1, 3)],
+								 <DOWN> |-> [mk_Coord(0, 0),mk_Coord(1,0),mk_Coord(1, 1),mk_Coord(1, 2),mk_Coord(1,3)],
+								 <LEFT> |-> [mk_Coord(0, 0),mk_Coord(1,0),mk_Coord(1,1),mk_Coord(2, 1),mk_Coord(3,1)],
+								 <RIGHT> |->[mk_Coord(0, 0),mk_Coord(1,0),mk_Coord(2,0),mk_Coord(0, 1),mk_Coord(3,0)]},
+
+			<PENTA_T> -> return {<DOWN> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(1, 2),mk_Coord(2, 0)],
+								<UP> |-> [mk_Coord(0, 0),mk_Coord(0,1),mk_Coord(0,2),mk_Coord(-1, 2),mk_Coord(1,2)],
+								<LEFT> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(2, 1),mk_Coord(2, -1)], 
+								<RIGHT>|->[mk_Coord(0, 0),mk_Coord(0,1),mk_Coord(0,2),mk_Coord(1,1),mk_Coord(2,1)]},
+	
+			<PENTA_CORNER> -> return {<UP> |-> [mk_Coord(0,0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(1, 2),mk_Coord(2,2)],
+									  <DOWN> |-> [mk_Coord(0,0),mk_Coord(0,1),mk_Coord(0,2),mk_Coord(1,0),mk_Coord(2,0)],
+									  <LEFT> |-> [mk_Coord(0,0),mk_Coord(1,0),mk_Coord(2,0),mk_Coord(2,-1),mk_Coord(2,-2)],
+									  <RIGHT> |-> [mk_Coord(0,0),mk_Coord(1,0),mk_Coord(2,0),mk_Coord(2,1),mk_Coord(2,2)]},
+			
+			<PENTA_Z> -> return {<UP> |->[mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 1),mk_Coord(1, 2),mk_Coord(1, 3)],
+								 <DOWN> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(1, 2),mk_Coord(1, 3)],
+                                 <LEFT> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(-1, 1),mk_Coord(0, 1)],
+                                 <RIGHT> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2,0),mk_Coord(2,-1),mk_Coord(3,-1)]},
+								 
+			<PENTA_LINE> -> return {<HORIZONTAL> |-> [mk_Coord(0,0),mk_Coord(1,0),mk_Coord(2,0),mk_Coord(3,0),mk_Coord(4,0)],
+									<VERTICAL> |-> [mk_Coord(0,0),mk_Coord(0,1),mk_Coord(0,2),mk_Coord(0,3),mk_Coord(0,4)]},
+									
+			<PENTA_SQ_PLUS_1> -> return {<UP> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(0, -1)],
+										<DOWN> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(1, 2)],
+										<LEFT> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(-1, 1)],
+										<RIGHT> |->[mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(2, 0)]},
+
+			<PENTA_M> -> return {<UP> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 1),mk_Coord(1, 2),mk_Coord(2, 2)],
+								<LEFT> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(1, -1),mk_Coord(2, -1),mk_Coord(2, -2)],
+								<DOWN> |-> [mk_Coord(0, 0),mk_Coord(0, -1),mk_Coord(1, -1),mk_Coord(1, -2),mk_Coord(2, -2)],
+								<RIGHT> |->[mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(2,1),mk_Coord(2, 2)]},
+
+			<PENTA_C> -> return {<RIGHT> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(1, 2)],
+								<LEFT> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(0, 2),mk_Coord(1, 2)], 
+								<UP> |-> [mk_Coord(0, 0),mk_Coord(2, 0),mk_Coord(0, 1),mk_Coord(1, 1),mk_Coord(1, 2)],
+								<DOWN> |->[mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(1, 0),mk_Coord(2, 1)]},
+
+			<PENTA_T_PLUS_1> -> return {<UP> |->[mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(1, 1),mk_Coord(1, 2),mk_Coord(2, 1)],
+										<LEFT> |-> [mk_Coord(0, 0),mk_Coord(1,0),mk_Coord(1, 1),mk_Coord(1, 2),mk_Coord(2, 1)],
+										<DOWN> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(1, -1),mk_Coord(2, 1)],
+										<RIGHT> |->[mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(1, -1)]},
+			
+			<PENTA_CROSS> -> return {<ALL> |-> [mk_Coord(0, 0),mk_Coord(-1, 1),mk_Coord(0, 1),mk_Coord(1, 1),mk_Coord(0, 2)]},
+			
+			<PENTA_LINE_T> -> return {<RIGHT> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(0, 3),mk_Coord(1, 1)],
+									  <LEFT> |-> [mk_Coord(0, 0),mk_Coord(0, 1),mk_Coord(0, 2),mk_Coord(0, 3),mk_Coord(-1, 2)],
+									  <UP> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(3, 0),mk_Coord(1, -1)],
+									  <DOWN> |->[mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(3, 0),mk_Coord(2, 1)]},
+		
+			<PENTA_LINE_Z> -> return {<VERTICAL> |->[mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(1, 1),mk_Coord(1, 2),mk_Coord(2, 2)],
+									  <HORIZONTAL> |-> [mk_Coord(0, 0),mk_Coord(1, 0),mk_Coord(2, 0),mk_Coord(0, 1),mk_Coord(2, -1)]},
+			others -> return {|->}
+			end
+			);
+
+end Piece

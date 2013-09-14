@@ -1,0 +1,105 @@
+class TestPiece is subclass of Test
+
+	operations		
+		public testGoodUsage : () ==> ()
+		testGoodUsage() == (
+			dcl p : Piece := new Piece(<NONE>, <MONO>);
+			dcl p1 : Piece := new Piece(<RED>, <MONO>);
+			dcl p2 : Piece := new Piece(<RED>, <TETRA_LINE>);
+			dcl p3 : Piece := new Piece(<RED>, <PENTA_M>);
+			
+			assertTrue(p.getColor() = <NONE>);			        
+			assertTrue(new Piece(<NONE>, <MONO>).getColor() = <NONE>);
+			assertTrue(new Piece(<BLUE>, <DUO>).getColor() = <BLUE>);
+			assertTrue(new Piece(<RED>, <TRIO_CORNER>).getColor() = <RED>);
+			assertTrue(new Piece(<YELLOW>, <PENTA_CORNER>).getColor() = <YELLOW>);
+			assertFalse(new Piece(<GREEN>, <PENTA_LINE_T>).getColor() = <YELLOW>);
+			
+			assertTrue(new Piece(<NONE>, <MONO>).getShape() = <MONO>);
+			assertTrue(new Piece(<BLUE>, <DUO>).getShape() = <DUO>);
+			assertTrue(new Piece(<RED>, <TRIO_CORNER>).getShape() = <TRIO_CORNER>);
+			assertTrue(new Piece(<YELLOW>, <PENTA_CORNER>).getShape() = <PENTA_CORNER>);
+			assertFalse(new Piece(<GREEN>, <PENTA_LINE_T>).getShape() = <PENTA_CORNER>);
+			    		
+    		assertTrue(p1.pieceSize(p1.getShape()) = 1);
+    		assertTrue(p1.getRotations(p1.getShape()) = 0);
+    		assertTrue(p1.getCurrDirection() = <ALL>);
+    		
+    		assertTrue(p2.pieceSize(p2.getShape()) = 4);
+    		assertTrue(p2.getRotations(p2.getShape()) = 2);
+    		assertTrue(p2.getCurrDirection() = <VERTICAL>);
+    		
+    		assertTrue(p3.pieceSize(p3.getShape()) = 5);
+    		assertTrue(p3.getRotations(p3.getShape()) = 4);
+    		assertTrue(p3.getCurrDirection() = <UP>); 	
+
+    		p1 := new Piece(<BLUE>, <MONO>);
+			p2 := new Piece(<BLUE>, <TETRA_LINE>);
+			p3 := new Piece(<BLUE>, <PENTA_M>);
+			
+			assertTrue(p1.getCurrDirection() = <ALL>);
+			p1.rotate();
+			assertTrue(p1.getCurrDirection() = <ALL>);
+			
+			assertTrue(p2.getCurrDirection() = <VERTICAL>);
+			p2.rotate();
+			assertTrue(p2.getCurrDirection() = <HORIZONTAL>);
+			p2.rotate();
+			assertTrue(p2.getCurrDirection() = <VERTICAL>);
+			
+			assertTrue(p3.getCurrDirection() = <UP>);
+			p3.rotate();
+			assertTrue(p3.getCurrDirection() = <RIGHT>);
+			p3.rotate();
+			assertTrue(p3.getCurrDirection() = <DOWN>);
+			p3.rotate();
+			assertTrue(p3.getCurrDirection() = <LEFT>);
+			p3.rotate();
+			assertTrue(p3.getCurrDirection() = <UP>);
+
+    		p1 := new Piece(<BLUE>, <MONO>);
+			p2 := new Piece(<BLUE>, <TETRA_LINE>);
+			p3 := new Piece(<BLUE>, <PENTA_M>);
+			
+			assertTrue(p1.getCurrDirection() = <ALL>);
+			p1.flip();
+			assertTrue(p1.getCurrDirection() = <ALL>);
+			
+			assertTrue(p2.getCurrDirection() = <VERTICAL>);
+			p2.flip();
+			assertTrue(p2.getCurrDirection() = <HORIZONTAL>);
+			p2.flip();
+			assertTrue(p2.getCurrDirection() = <VERTICAL>);
+			
+			assertTrue(p3.getCurrDirection() = <UP>);
+			p3.flip();
+			assertTrue(p3.getCurrDirection() = <DOWN>);
+			p3.flip();
+			assertTrue(p3.getCurrDirection() = <UP>);
+			p3.rotate();
+			assertTrue(p3.getCurrDirection() = <RIGHT>);
+			p3.flip();
+			assertTrue(p3.getCurrDirection() = <LEFT>);
+			p3.flip();
+			assertTrue(p3.getCurrDirection() = <RIGHT>);
+
+    		p1 := new Piece(<BLUE>, <MONO>);
+			p2 := new Piece(<BLUE>, <TETRA_LINE>);
+			p3 := new Piece(<BLUE>, <TETRA_LINE>);
+			
+			assertTrue(p2.equals(p3));
+			assertFalse(p1.equals(p2));
+
+			p := new Piece(<BLUE>,<PENTA_CORNER>);
+			
+			p.toggleIsBeingPlayed();
+			assertTrue(p.getIsBeingPlayed());
+			p.toggleIsBeingPlayed();
+			assertFalse(p.getIsBeingPlayed());			
+
+			p:= new Piece(<NONE>,<MONO>);
+			
+			assertTrue(len p.getAllShapes() = 21);
+		);
+		
+end TestPiece

@@ -1,0 +1,11 @@
+class Test
+
+operations
+
+    protected assertTrue(a: bool) == skip
+    pre a;
+
+    protected assertFalse(a: bool) == skip
+    pre not a;
+
+end Test

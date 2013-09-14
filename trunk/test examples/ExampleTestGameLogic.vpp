@@ -1,0 +1,46 @@
+class TestGameLogic is subclass of Test
+
+instance variables
+
+    public game : GameLogic;
+
+operations
+
+    public testSwitchCurrentPlayer() == (
+       game := new GameLogic();
+       assertTrue(game.getCurrentPlayer() = <White>);
+       game.switchCurrentPlayer();
+       assertTrue(game.getCurrentPlayer() = <Black>);
+       game.switchCurrentPlayer();
+       assertTrue(game.getCurrentPlayer() = <White>);
+    );
+
+    public testGetInvalidMove() == (
+        dcl stk : Stack := new Stack(new CrossPiece(<White>));
+        game := new GameLogic();
+        assertFalse(game.getBoard().hasStack(new Position(4,4))); --no stack in this position
+        assertTrue(game.getValidMoves(new Position(4,4)) = {});
+	game.getBoard().addStack(new Position(3,3), stk); --adds a new white stack in pos 3,3
+        stk.append(new Stack(new CirclePiece(<Black>)));
+        stk.append(new Stack(new CirclePiece(<Black>)));
+        stk.append(new Stack(new CirclePiece(<Black>)));
+        stk.append(new Stack(new CirclePiece(<Black>))); --adds 4 black pieces to that stack
+        assertFalse(game.getBoard().validMove(new Position(3,3), new Position(7,7))); --invalid move from white stack to white piece
+        stk.append(new Stack(new CirclePiece(<Black>))); --adds another black piece making this stack immovable
+        assertTrue(game.getValidMoves(new Position(3,3)) = {}); --test that is immovable
+
+        assertFalse(game.getBoard().validMove(new Position(2,2), new Position(3,3))); --tests that is impossible to capture a stack with 6 or more
+        assertFalse(game.validCurrentPlayerMovableStack(new Position(2,2))); -- tests that is impossible for the white player to move a black stack
+    );
+
+    public testRun() == (
+        dcl ui : GameLogicListenerMockup := new GameLogicListenerMockup();
+        game := new GameLogic(ui);
+	assertFalse(game.isGameOver());
+        game.run();
+        assertTrue(game.getState() = <GameOver>);
+        assertTrue(game.getCurrentPlayer() = <White>);
+	assertTrue(game.isGameOver());
+    );
+
+end TestGameLogic

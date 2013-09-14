@@ -1,0 +1,54 @@
+class TestPlayer is subclass of Test
+
+	instance variables
+		
+		private player: Player := new Player("John", <BLUE>);
+		
+	operations
+	
+		public testGoodUsage : () ==> ()
+		testGoodUsage() == (
+			dcl newPiece : Piece := new Piece(<NONE>, <MONO>);
+			
+			assertTrue(player.getName() = "John");
+			assertTrue(player.getColor() = <BLUE>);
+			
+			player.initHand();
+			assertTrue(len player.getPieces() = 21);
+			
+			assertTrue(player.getScore() = 0);
+			assertFalse(player.hasPlayedFirstPiece());
+			
+			for all p in set elems player.getPieces() do (
+				assertTrue(p.getColor() = player.getColor());
+				assertTrue(p.getShape() in set elems newPiece.getAllShapes());	
+			);			
+		
+			player.updateScore(3);
+			assertTrue(player.getScore() = 3);
+		
+			assertFalse(player.isPlayerPlaying());
+			player.toggleIsPlaying();
+			assertTrue(player.isPlayerPlaying());
+			player.toggleIsPlaying();
+			assertFalse(player.isPlayerPlaying());
+		
+			assertFalse(player.hasPlayedFirstPiece());
+			player.setPlayedFirstPiece(true);
+			assertTrue(player.hasPlayedFirstPiece());
+		
+			player.choosePiece(2);
+			player.updateLastPiecePlayed();
+			assertFalse(player.wasLastPieceMono());
+		
+			player.choosePiece(1);
+			assertTrue(player.getPlayingPiece().equals(player.getPieces()(1)));
+			assertTrue(player.getCurrentPiece() = player.getPlayingPiece());
+
+			player.updateLastPiecePlayed();
+			assertTrue(player.getCurrentPiece() not in set elems player.getPieces());
+			assertTrue(player.getLastPiecePlayed() = player.getCurrentPiece());
+			assertTrue(player.wasLastPieceMono());
+		);
+		
+end TestPlayer

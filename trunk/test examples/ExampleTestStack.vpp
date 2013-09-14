@@ -1,0 +1,62 @@
+class TestStack is subclass of Test
+instance variables
+    
+    private stack : Stack;
+
+operations
+
+    public testValidMoveStackHeight() == (
+        stack := new Stack(new CrossPiece(<Black>));
+        assertTrue(stack.validMoveStackHeight());
+        stack.append(new Stack(new SquarePiece(<White>)));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        assertTrue(stack.validMoveStackHeight());
+    );
+
+    public testInvalidMoveStackHeight() == (
+        stack := new Stack(new CrossPiece(<Black>));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        assertFalse(stack.validMoveStackHeight());
+    );
+
+    public testValidMoveDirection() == (
+        dcl p1 : Position := new Position(1,1);
+        dcl p2 : Position := new Position(2,2);
+        stack := new Stack(new CrossPiece(<Black>));
+        assertTrue(stack.validMoveDirection(p1,p2));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        assertTrue(stack.validMoveDirection(p1,p2));
+        assertTrue(stack.validMoveDirection(p1,new Position(3,3)));
+    );
+
+    public testValidMoveLength() == (
+        dcl p1 : Position := new Position(1,1);
+        dcl p2 : Position := new Position(1,2);
+        stack := new Stack(new CrossPiece(<Black>));
+        assertTrue(stack.validMoveLength(p1,p2));
+        stack.append(new Stack(new SquarePiece(<White>)));
+        p2 := new Position(1,3);
+        assertTrue(stack.validMoveLength(p1,p2));
+    );
+
+    public testInvalidMoveLength() == (
+        dcl p1 : Position := new Position(1,1);
+        dcl p2 : Position := new Position(1,3);
+        stack := new Stack(new CrossPiece(<Black>));
+        assertFalse(stack.validMoveLength(p1,p2));
+    );
+
+    public testAppend() == (
+        dcl topPiece : Piece := new CrossPiece(<Black>);
+        dcl destTopPiece : Piece := new SquarePiece(<White>);
+        dcl destStk : Stack := new Stack(destTopPiece);
+        stack := new Stack(topPiece);
+        stack.append(destStk);
+        assertTrue(stack.getPieces() = [topPiece, destTopPiece]);
+    );
+
+end TestStack

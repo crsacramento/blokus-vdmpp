@@ -1,0 +1,28 @@
+Exporting package to 'C:\Users\Sofia\Documents\FEUP\MIEIC\5º Ano\1º Semestre\MFES\Blokus\SVN\uml\blokus_xmiExport.xml'
+Retrieving data for export: diagram elements
+Retrieving data for export: links
+Retrieving data for export: constraints
+Retrieving data for export: attribute tagged values
+Retrieving data for export: operation tagged values
+Retrieving data for export: operation parameter tagged values
+Retrieving data for export: connector tagged values
+Completed data retrieval
+Pre-processing export tree...
+Completed pre-processing
+Processing package: Class Model
+Element:0: String
+Element:1: Piece
+Element:2: Board
+Element:3: $help://classdiagram.htm
+Element:4: Shape
+Element:5: Coord
+Element:6: $help://class_model_pattern.htm
+Element:7: Player
+Element:8: 
+Element:9: Color
+Element:10: Note
+Element:11: 
+Element:12: Game
+Diagram: Class Model
+Formatting output XML...please wait
+XMI Document Export Complete!

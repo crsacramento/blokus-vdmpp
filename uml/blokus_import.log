@@ -1,0 +1,165 @@
+
+Importing Model from XMI
+Add Classifier: Game
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: Test
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: Board
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: Piece
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: Player
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: TestGame
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: TestBoard
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: TestPiece
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: TestPlayer
+Adding tagged values (operation)
+Adding tagged values (object)
+Add Classifier: nat
+Adding tagged values (object)
+Add Classifier: bool
+Adding tagged values (object)
+Add Classifier: nat1
+Adding tagged values (object)
+Add Classifier: void
+Adding tagged values (object)
+Add Classifier: Color
+Adding tagged values (object)
+Add Classifier: Shape
+Adding tagged values (object)
+Add Classifier: %5BPlayer%5D
+Adding tagged values (object)
+Add Classifier: Direction
+Adding tagged values (object)
+Add Classifier: Game%60String
+Adding tagged values (object)
+Add Classifier: Piece%60Color
+Adding tagged values (object)
+Add Classifier: Piece%60Coord
+Adding tagged values (object)
+Add Classifier: seq+of+Piece
+Adding tagged values (object)
+Add Classifier: seq+of+Shape
+Adding tagged values (object)
+Add Classifier: seq+of+String
+Adding tagged values (object)
+Add Classifier: set+of+Player
+Adding tagged values (object)
+Add Classifier: seq+of+Piece%60Coord
+Adding tagged values (object)
+Add Classifier: map+Direction+to+seq+of+Coord
+Adding tagged values (object)
+Add Classifier: map+Piece%60Coord+to+Piece%60Color
+Adding tagged values (object)
+Resolving Classifiers
+Resolve Package Links
+Add Diagrams
+Adding diagram objects
+Resolving connections
+Add generalization
+Add generalization
+Add generalization
+Add generalization
+Add association
+Add association
+Add association
+Add association
+Add association
+Add association
+Add association
+Add diagram links
+Add notes
+Add diagram links
+Add stereotypes
+Adding tagged values
+Import Complete!

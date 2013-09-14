@@ -1,0 +1,35 @@
+class TestPieces is subclass of Test
+
+operations
+
+    public testPieceColor() == (
+        assertTrue(new SquarePiece(<Black>).getColor() = <Black>);
+        assertTrue(new CirclePiece(<White>).getColor() = <White>);
+        assertFalse(new CrossPiece(<White>).getColor() = <Black>);
+    );
+
+    public testSquarePieceDirection() == (
+        assertTrue(new SquarePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(3, 5)));
+        assertTrue(new SquarePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 2)));
+        assertFalse(new SquarePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 4)));
+        assertFalse(new SquarePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 0)));
+        assertFalse(new SquarePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 5)));
+    );
+
+    public testCirclePieceDirection() == (
+        assertFalse(new CirclePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(3, 5)));
+        assertFalse(new CirclePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 2)));
+        assertTrue(new CirclePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 4)));
+        assertTrue(new CirclePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 0)));
+        assertFalse(new CirclePiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 5)));
+    );
+
+    public testCrossPieceDirection() == (
+        assertTrue(new CrossPiece(<Black>).validMoveDirection(new Position(3, 2), new Position(3, 5)));
+        assertTrue(new CrossPiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 2)));
+        assertTrue(new CrossPiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 4)));
+        assertTrue(new CrossPiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 0)));
+        assertFalse(new CrossPiece(<Black>).validMoveDirection(new Position(3, 2), new Position(5, 5)));
+    );
+
+end TestPieces

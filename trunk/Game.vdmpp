@@ -1,0 +1,207 @@
+class Game
+
+types
+	public String = seq of char;
+
+instance variables
+	private board : Board := new Board();
+	private players : set of Player := {};
+	private currentPlayer : [Player] := nil;
+
+operations
+
+	public getPlayerSet : () ==> set of Player
+	getPlayerSet() ==
+		return players;
+		
+	public getBoard : () ==> Board
+    getBoard() ==
+        return board;
+		
+	public getCurrentPlayer : () ==> [Player]
+	getCurrentPlayer() == return currentPlayer;
+		
+	-- Begins the game
+	-- seq of seq of char
+	public init : () ==> ()
+	init() ==
+		(
+			dcl i : nat1 := 1;
+			dcl s : Game`String := [];
+			while(i <= 4) do
+			(
+				dcl p1 : Player;
+				dcl c : Piece`Color;
+				cases i :
+					1 -> c:= <BLUE>,
+					2 -> c:= <YELLOW>,
+					3 -> c := <RED>,
+					4 -> c := <GREEN>
+				end;
+				
+				cases i :
+					1 -> s := "P1",
+					2 -> s := "P2",
+					3 -> s := "P3",
+					4 -> s := "P4"
+				end;
+				
+				p1:= new Player(s,c);
+				if(players = {}) then
+				(
+					p1.toggleIsPlaying();
+					currentPlayer := p1;
+				)else skip;		
+				
+				players := players union {p1};
+				i := i+1;		
+				s := [];		
+			)
+		);
+
+	public resetGame : () ==> ()
+	resetGame() ==
+		(
+			board.resetBoard();
+			for all p in set players do (
+				p.updateScore(0);
+				p.initHand();
+			);
+		);
+
+ 	public isGameOver : () ==> bool
+ 	isGameOver() ==
+	(
+		dcl b: bool := true;
+		for all p in set players do (
+			if canPlay(p)
+			then (b := false;)
+			else skip;
+		);
+		return b;
+	);
+	
+	public rotatePiece : Player * nat1 ==> ()
+	rotatePiece(p, times) ==
+	(
+		dcl i : nat1 := 1;
+		while(i <= times) do(
+			p.getPlayingPiece().rotate();
+			i := i+1;
+		);
+	);
+	
+	public flipPiece : Player * nat1 ==> ()
+	flipPiece(p, times) ==
+	(
+		dcl i : nat1 := 1;
+		while(i <= times) do(
+			p.getPlayingPiece().flip();
+			i := i+1;
+		);
+	);
+
+	public passTurn : () ==> ()
+	passTurn() ==
+		-- case? p1 => p2, p2=>p3, p3=>p4, p4=>p1
+		getNextPlayerToPlay();
+
+	public getPlayerByColor : Piece`Color ==> Player
+	getPlayerByColor(color) ==
+	(
+		dcl ret : Player := new Player("PX", <NONE>);
+		for all p in set players
+  			do if p.getColor() = color then ret := p; 
+		return ret;
+	)post RESULT.getColor() <> <NONE>;
+  
+	public getNextPlayerToPlay : () ==> ()
+	getNextPlayerToPlay() ==
+	--azul -> amarelo -> vermelho -> verde
+	(
+		dcl color : Piece`Color := currentPlayer.getColor();  
+		cases color :
+			<BLUE> -> currentPlayer := getPlayerByColor(<YELLOW>),
+			<YELLOW> -> currentPlayer := getPlayerByColor(<RED>),
+			<RED> -> currentPlayer := getPlayerByColor(<GREEN>),
+			<GREEN> -> currentPlayer := getPlayerByColor(<BLUE>)
+		end;
+	);
+  
+	public pieceFits : Piece * Piece`Coord ==> bool
+	pieceFits(piece, start_coord) ==
+  	-- check all positions of piece, see if any has a color different than <NONE>
+    (
+		dcl m : map Piece`Direction to seq of Piece`Coord := piece.getPositionsToDraw();
+		dcl coords : seq of Piece`Coord := m(piece.getCurrDirection());
+    	dcl i : nat1 := 1; 
+    	dcl b : bool := true;
+    	dcl c : Piece`Coord;
+    	while(i <= len coords) do (
+    		c := mk_Piece`Coord(start_coord.x + coords(i).x,start_coord.y + coords(i).y);
+    		if board.board(c) <> <NONE> then b := false;
+    		i := i+1;
+    	);
+    	return b;
+    );
+
+	public play : Player * Piece * Piece`Coord ==> bool
+	play(player, piece, start_coord) ==
+	(
+		dcl b : bool := false;
+		if( len(player.getPieces()) = 21) then
+		(
+			if validFirstMove(player,piece,start_coord) then
+			(
+				board.drawPiece(piece,start_coord);
+				player.updateLastPiecePlayed();
+				player.updateScore(piece.pieceSize(piece.getShape()));
+			);
+			b := true;
+		)else(
+			if validMove(player,piece,start_coord) then 
+			(
+				board.drawPiece(piece,start_coord);
+				player.updateLastPiecePlayed();
+				player.updateScore(piece.pieceSize(piece.getShape()));
+				b := true;
+			);
+		);
+		return b;
+	);
+	
+	    -- se conseguir colocar uma piece no tabuleiro	
+	public canPlay : Player ==> bool
+	canPlay(player) ==
+  	-- get empty coords in board, check if piece fits
+	(
+		return true;
+	);
+
+	public validMove : Player * Piece * Piece`Coord ==> bool
+	validMove(player, piece, start_coord) ==
+	( 
+		dcl b: bool := false;
+		if canPlay(player) then
+			if not board.isPieceOutOfBounds(piece, start_coord) and 
+				board.doesPieceFit(piece, start_coord) and 
+				board.doesPieceTouchCorner(piece, start_coord) and 
+				not board.doesPieceTouchSameColorOnSides(piece, start_coord)
+    	   			then b := true;
+    	return b;
+    );
+    
+    public validFirstMove :  Player * Piece * Piece`Coord ==> bool
+	validFirstMove(player, piece, start_coord) ==
+	( 
+		dcl b: bool := false;
+		if canPlay(player) then
+			if not board.isPieceOutOfBounds(piece, start_coord) and 
+				board.doesPieceFit(piece, start_coord) and
+				board.isPieceInCorner(piece, start_coord) and 
+				not board.doesPieceTouchSameColorOnSides(piece, start_coord)
+    	   			then b := true;
+    	return b;
+    );
+
+end Game

@@ -1,0 +1,110 @@
+class TestGame is subclass of Test
+	operations
+		-- operacao auxiliar que tira partido do facto do
+		-- interpretador parar quando se viola uma pre-condicao
+			
+		public TestGoodUsage : () ==> ()
+		TestGoodUsage() ==
+			(
+				dcl gametime : Game := new Game();
+				dcl players : set of Player := {};
+				dcl player : Player;
+				dcl b : bool := true;
+				dcl colors : set of Piece`Color := {};
+				dcl color : Piece`Color;
+				dcl p : Piece := new Piece();
+				
+				assertTrue((card gametime.getPlayerSet()) = 0);
+				
+				gametime.init();
+				
+				--test if there are 4 players...
+				players := gametime.getPlayerSet();
+				assertTrue(card(players) = 4);
+				
+				assertTrue(gametime.getPlayerByColor(<BLUE>).getColor() = <BLUE>);
+				assertTrue(gametime.getPlayerByColor(<YELLOW>).getColor() = <YELLOW>);
+				assertTrue(gametime.getPlayerByColor(<RED>).getColor() = <RED>);
+				assertTrue(gametime.getPlayerByColor(<GREEN>).getColor() = <GREEN>);
+				
+				--if their colors are unique
+				for all p in set players do(
+					color := p.getColor();
+					if color not in set colors 
+					then colors := dunion {colors,{color}}
+					else b := false;
+				);
+				assertTrue(b);
+				
+				--if the first one is true in playing
+				player := gametime.getPlayerByColor(<BLUE>);
+				assertTrue(player.isPlayerPlaying());
+				assertTrue(player = gametime.getCurrentPlayer());
+				
+				p := player.getPieces()(1);
+				
+				assertTrue(p.getShape() = <MONO>);
+				
+				assertTrue(gametime.validFirstMove(player, p, (mk_Piece`Coord(1, 1))));
+				
+				assertTrue(gametime.play(player, p, mk_Piece`Coord(1, 1)));
+				
+				assertTrue(gametime.validMove(player, p, (mk_Piece`Coord(2, 2))));
+				assertFalse(gametime.validMove(player, p, (mk_Piece`Coord(2, 1))));
+				
+				--assertTrue(gametime.canPlay(player));
+				player.choosePiece(1);
+				assertTrue(card dom gametime.getBoard().getEmptyCoords() <> 200);
+				
+				gametime.getNextPlayerToPlay();
+				assertTrue(gametime.getCurrentPlayer().getColor() = <YELLOW>);
+				
+				gametime.passTurn();
+				assertTrue(gametime.getCurrentPlayer().getColor() = <RED>);
+				
+				--assertFalse(gametime.isGameOver());
+				
+				player := gametime.getCurrentPlayer();
+				player.choosePiece(2);
+				assertTrue(player.getPlayingPiece().getCurrDirection() = <VERTICAL>);
+				gametime.flipPiece(player, 1);
+				assertTrue(player.getPlayingPiece().getCurrDirection() = <HORIZONTAL>);
+				gametime.flipPiece(player, 2);
+				assertTrue(player.getPlayingPiece().getCurrDirection() = <HORIZONTAL>);
+				
+				gametime.rotatePiece(player, 1);
+				assertTrue(player.getPlayingPiece().getCurrDirection() = <VERTICAL>);
+				gametime.rotatePiece(player, 2);
+				assertTrue(player.getPlayingPiece().getCurrDirection() = <VERTICAL>);
+				
+				player := gametime.getCurrentPlayer();
+				player.choosePiece(3);
+				--assertFalse(gametime.play(player, player.getCurrentPiece(), (mk_Piece`Coord(2, 2))));
+				gametime.getNextPlayerToPlay();
+				player := gametime.getCurrentPlayer();
+				player.choosePiece(3);
+				--assertFalse(gametime.pieceFits(player.getPlayingPiece(), mk_Piece`Coord(1, 1)));
+				--assertTrue(gametime.pieceFits(player.getPlayingPiece(), mk_Piece`Coord(2, 1)));
+				
+				--gametime.resetGame();
+				--assertTrue(card dom gametime.getBoard().getEmptyCoords() = 200);
+				
+				--assertTrue(gametime.getPlayerByColor(<BLUE>).getColor() = <BLUE>);
+				--assertTrue(gametime.getPlayerByColor(<BLUE>).getScore() = 0);
+				
+				--assertTrue(gametime.getPlayerByColor(<YELLOW>).getColor() = <YELLOW>);
+				--assertTrue(gametime.getPlayerByColor(<YELLOW>).getScore() = 0);
+
+				--assertTrue(gametime.getPlayerByColor(<RED>).getColor() = <RED>);
+				--assertTrue(gametime.getPlayerByColor(<RED>).getScore() = 0);
+
+				--assertTrue(gametime.getPlayerByColor(<GREEN>).getColor() = <GREEN>);
+				--assertTrue(gametime.getPlayerByColor(<GREEN>).getScore() = 0);
+				
+				--player := gametime.getPlayerByColor(<BLUE>);
+				--assertTrue(player.isPlayerPlaying());
+				--assertTrue(player = gametime.getCurrentPlayer());
+				
+			);
+		
+end TestGame

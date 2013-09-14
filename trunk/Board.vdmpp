@@ -1,0 +1,236 @@
+class Board
+
+values
+	private static BOARD_SIZE = 20;
+
+instance variables
+	public board : map Piece`Coord to Piece`Color := { |-> };	
+
+operations
+	public Board : () ==> Board
+	Board() ==
+	(
+		resetBoard();
+	);
+	
+	public resetBoard : () ==> ()
+	resetBoard() ==
+	(
+		dcl c : Piece`Coord;
+		for all i in set {1,...,BOARD_SIZE} do(
+			for all j in set {1,...,BOARD_SIZE} do(
+				c := mk_Piece`Coord(i,j);
+				board := board ++ {c |-> <NONE>};
+			)
+		)
+	)-- inv: inicio do jogo, nao deve existir nenhuma peça
+	post dinter{{<BLUE>, <YELLOW>,<RED>,<GREEN>}, rng board} = {}
+		and card(dom board) = 400;
+	
+	public doesPieceFit : Piece * Piece`Coord ==> bool
+	doesPieceFit(piece, start_coord) == (
+		dcl i : nat1 := 1;
+		dcl b : bool := true;
+		dcl coords : seq of Piece`Coord := piece.getPositionsToDraw()(piece.getCurrDirection());
+		dcl coord : Piece`Coord;
+		while (i <= len(coords)) do(
+			coord := mk_Piece`Coord(start_coord.x + coords(i).x,start_coord.y + coords(i).y);
+			if coord in set dom (board) then
+			if board(coord) <> <NONE> then b := false;
+			i := i+1;
+		);
+		return b;
+	)pre start_coord.x > 0 and start_coord.y > 0 
+		 and start_coord.x < BOARD_SIZE and start_coord.y < BOARD_SIZE
+		 and piece.getCurrDirection() in set dom (piece.getPositionsToDraw());
+
+	-- TODO this logic isn't complete. my brain is requiring sleep.
+	-- coords start at 0 or 1?
+	-- check if corner is taken? or simply if it's in a corner?
+	public isPieceInCorner : Piece * Piece`Coord ==> bool
+	isPieceInCorner(piece, start_coord) == (
+		dcl i : nat1 := 1;
+		dcl b : bool := false;
+		dcl corners : seq of Piece`Coord := [mk_Piece`Coord(1,1),
+									   mk_Piece`Coord(20,1),
+									   mk_Piece`Coord(20,20),
+									   mk_Piece`Coord(1,20)];
+		dcl coordsInBoard : seq of Piece`Coord := returnPieceCoordsInBoard(piece,start_coord);
+		while (i <= len(coordsInBoard)) do(
+			if(corners(1) = coordsInBoard(i)
+			   or corners(2) = coordsInBoard(i)
+			   or corners(3) = coordsInBoard(i)
+			   or corners(4) = coordsInBoard(i)) 
+			   then b:= true;
+			   
+			i := i+1;
+		);
+									   
+		return b;
+	);
+	
+	public isPieceOutOfBounds : Piece * Piece`Coord ==> bool
+	isPieceOutOfBounds(piece, start_coord) ==
+	(
+		dcl i : nat1 := 1;
+		dcl b : bool := false;
+		dcl coords : seq of Piece`Coord := piece.getPositionsToDraw()(piece.getCurrDirection());
+		dcl coord : Piece`Coord;
+		while (i <= len(coords)) do(
+			coord := mk_Piece`Coord(start_coord.x + coords(i).x,start_coord.y + coords(i).y);
+			if coord.x < 1 or coord.x > BOARD_SIZE or coord.y < 1 or coord.y > BOARD_SIZE 
+			then b := true;
+			i := i+1;
+		);
+		return b;
+	)pre start_coord.x > 0 and start_coord.y > 0 
+		 and start_coord.x <= BOARD_SIZE and start_coord.y <= BOARD_SIZE;
+
+	public returnPieceCoordsInBoard : Piece * Piece`Coord ==> seq of Piece`Coord
+	returnPieceCoordsInBoard(p,c) ==(
+		dcl i : nat1 := 1;
+		dcl coord : Piece`Coord;
+		dcl coords : seq of Piece`Coord := p.getPositionsToDraw()(p.getCurrDirection());
+		dcl ret : seq of Piece`Coord := []; --piece coords applied in board
+		while (i <= len(coords)) do(
+			coord := mk_Piece`Coord(c.x + coords(i).x,c.y + coords(i).y);
+			ret := ret ^ [coord];
+			i := i+1;
+		);
+		return ret;
+	)pre c.x > 0 and c.y > 0 and c.x <= BOARD_SIZE and c.y <= BOARD_SIZE;
+	
+	-- c: corner candidate to be evaluated, might be valid or not.
+	-- (if it has any part of the piece above, below, left or right => not valid)
+	-- (if it is the same coord as one of the piece coords => also not valid!)
+	-- Example: DUO in direction VERTICAL
+	-- Piece at [(3,2), (3,3)]
+	-- Corner candidates possible of (3,2) are: [(2,1), (4,1), (2,3), (4,3)]
+	-- Corner candidates possible of (3,3) are: [(2,2), (4,2), (4,2), (4,4)]
+	-- c := (2,3)
+	-- For c the above, below, left and right are: [(1,3), (3,3), (2,1), (2,4)]
+	-- is piece in it? Yes. Not valid.
+	-- c := (2,1)
+	-- For c the above, below, left and right are: [(1,1), (3,1), (2,0), (2,2)]
+	-- is piece in it? No. Valid.
+	--  OK  ____  OK
+	--     |    |
+	--     |____|
+	--     |    |
+	--     |____|
+	--  OK        OK
+	-- s: piece position in the map
+	public validCorner : Piece`Coord * seq of Piece`Coord ==> bool
+	validCorner(c, s) ==
+	(
+		-- obtain the coords above, below, left and right of the possibly valid corner given
+		dcl sides : seq of Piece`Coord := [mk_Piece`Coord(c.x-1,c.y),
+									 mk_Piece`Coord(c.x+1,c.y),
+									 mk_Piece`Coord(c.x,c.y-1),
+									 mk_Piece`Coord(c.x,c.y+1)];
+		dcl b : bool := true;
+		dcl i : nat := 1;
+		-- For the coords of the piece given
+		while (i <= len(s)) do(
+			-- if the valid corner candidate is not part of the piece (can happen in TRIO_CORNER e.g.)
+			if(not c = s(i)) then
+				-- check if coords above, below, left or right match any part of the piece
+				if (sides(1) = s(i) 
+					or sides(2) = s(i) 
+					or sides(3) = s(i) 
+					or sides(4) = s(i))
+				-- if so, it is not a valid corner
+					then b:=false;
+			i := i+1;
+		);
+		return b;
+	)pre c.x > 0 and c.y > 0 and c.x <= BOARD_SIZE and c.y <= BOARD_SIZE
+		 and len(s) > 0;
+	
+	public doesPieceTouchCorner : Piece * Piece`Coord ==> bool
+	doesPieceTouchCorner(piece, start_coord) ==
+	(
+		dcl i : nat1 := 1;
+		dcl j : nat1 := 1;
+		dcl b : bool := false;
+		--dcl cornerCoords : seq of Piece`Coord := piece.getCorners()(piece.getCurrDirection()); 
+		--all corners of piece's current direction
+		dcl corners : seq of Piece`Coord; --var used in iteration
+		dcl coordsInBoard : seq of Piece`Coord := returnPieceCoordsInBoard(piece,start_coord);
+		while (i <= len(coordsInBoard)) do(
+			if b = true then return b;
+			corners := [mk_Piece`Coord(coordsInBoard(i).x-1,coordsInBoard(i).y-1),
+						mk_Piece`Coord(coordsInBoard(i).x+1,coordsInBoard(i).y-1),
+						mk_Piece`Coord(coordsInBoard(i).x+1,coordsInBoard(i).y+1),
+						mk_Piece`Coord(coordsInBoard(i).x-1,coordsInBoard(i).y+1)];
+			while(j <= 4) do (
+				if (corners(j).x > 0 and corners(j).x <= 20
+					and corners(j).y > 0 and corners(j).y <= 20) then
+					if (validCorner(corners(j),coordsInBoard)) then
+						if (board(corners(j)) = piece.getColor())
+							then b := true;
+				j := j+1;
+			);
+			j := 1;
+			i := i+1;
+		);
+		return b;
+	)pre start_coord.x > 0 and start_coord.y > 0 
+	 and start_coord.x <= BOARD_SIZE and start_coord.y <= BOARD_SIZE;
+	
+	public doesPieceTouchSameColorOnSides: Piece * Piece`Coord ==> bool
+	doesPieceTouchSameColorOnSides(piece, start_coord) ==
+	(
+		dcl i : nat1 := 1;
+		dcl j : nat1 := 1;
+		dcl b : bool := false;
+		--all corners of piece's current direction
+		dcl sides : seq of Piece`Coord; --var used in iteration
+		dcl coordsInBoard : seq of Piece`Coord := returnPieceCoordsInBoard(piece,start_coord);
+		
+		--get all squares, see if they touch same color on their sides (and the side isnt part of the piece)
+		while (i <= len(coordsInBoard)) do(
+			sides := [mk_Piece`Coord(coordsInBoard(i).x-1,coordsInBoard(i).y),
+					  mk_Piece`Coord(coordsInBoard(i).x+1,coordsInBoard(i).y),
+					  mk_Piece`Coord(coordsInBoard(i).x,coordsInBoard(i).y-1),
+					  mk_Piece`Coord(coordsInBoard(i).x,coordsInBoard(i).y+1)];
+			while(j <= 4) do (
+				if (sides(j).x > 0 and sides(j).x <= 20
+					and sides(j).y > 0 and sides(j).y <= 20) then 
+					if (sides(j) not in set elems coordsInBoard) then
+						if(board(sides(j)) = piece.getColor())
+							then b:= true;
+				j := j+1;
+			);
+			j := 1;
+			i := i+1;
+		);
+		return b;
+	)pre start_coord.x > 0 and start_coord.y > 0 
+		 and start_coord.x <= BOARD_SIZE and start_coord.y <= BOARD_SIZE;
+	
+	public getEmptyCoords : () ==> map Piece`Coord to Piece`Color
+	getEmptyCoords() ==
+	(
+		dcl ret : map Piece`Coord to Piece`Color := {|->};
+		for all c in set dom board do
+			if board(c) = <NONE> then ret := ret ++ {c |-> board(c)};
+		return ret;
+	);
+	
+	
+	public drawPiece : Piece * Piece`Coord ==> ()
+	drawPiece(piece, start_coord) ==
+	(
+		dcl i : nat1 := 1;
+		dcl m : map Piece`Direction to seq of Piece`Coord := piece.getPositionsToDraw();
+		dcl coords : seq of Piece`Coord := m(piece.getCurrDirection());
+		dcl coord : Piece`Coord;
+		while (i <= len(coords)) do(
+			coord := mk_Piece`Coord(start_coord.x + coords(i).x,start_coord.y + coords(i).y);
+			board := board ++ {coord |-> piece.getColor()};			
+			i := i+1;
+		);
+	)pre start_coord.x > 0 and start_coord.y > 0 
+	 and start_coord.x <= BOARD_SIZE and start_coord.y <= BOARD_SIZE;
+end Board
